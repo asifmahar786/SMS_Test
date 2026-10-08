@@ -100,10 +100,22 @@ app.post("/students", async (req, res) => {
     }
 
 
+    // Last / highest ID wala student find karo
+    const lastStudent = await Student.findOne()
+      .sort({ id: -1 });
+
+    // Automatic Increment ID
+    let newId = 1;
+
+    if (lastStudent) {
+      newId = lastStudent.id + 1;
+    }
+
+
     // New Student Create
     const student = await Student.create({
 
-      id: id,
+      id: newId,
 
       name: name.trim(),
 
@@ -191,7 +203,84 @@ app.get("/students/:id", async (req, res) => {
 });
 
 
+// ======================================
+// 4. PUT - UPDATE STUDENT
+// ======================================
 
+app.put("/students/:id", async (req, res) => {
+  // URL se ID lena
+    const id = Number(req.params.id);
+  try {
+
+    const { name, email, course } = req.body;
+
+    // Validation
+    if (!name || !email || !course) {
+
+      return res.status(400).json({
+        message: "Name, email and course are required"
+      });
+
+    }
+    const student =
+      await Student.findOneAndUpdate(
+        { id: id },
+        {
+          name: name,
+          email: email,
+          course: course
+        }
+      );
+
+    if (!student) {
+      return res.status(404).json({
+        message: "Student Not Found"
+      });
+    }
+
+    res.status(200).json({
+      message: "Student Updated Successfully",
+      student: student
+    });
+
+  } catch (error) {
+
+    res.status(400).json({
+      message: error.message
+    });
+
+  }
+
+});
+
+
+// ======================================
+// 5. DELETE - DELETE STUDENT
+// ======================================
+
+app.delete("/students/:id", async (req, res) => {
+  // URL se ID lena
+    const id = Number(req.params.id);
+  try {
+    const student =
+      await Student.findOneAndDelete(
+         { id: id }
+      );
+    if (!student) {
+      return res.status(404).json({
+        message: "Student Not Found"
+      });
+    }
+    res.status(200).json({
+      message: "Student Deleted Successfully",
+      student: student
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: "Invalid Student ID"
+    });
+  }
+});
 // ======================================
 // 404 ROUTE
 // ======================================
@@ -200,7 +289,6 @@ app.use((req, res) => {
     message: "Route Not Found"
   });
 });
-
 
 // ======================================
 // START SERVER
@@ -212,5 +300,3 @@ app.listen(PORT, () => {
   );
 
 });
-
-module.exports = app;
