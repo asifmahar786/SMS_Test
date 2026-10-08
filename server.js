@@ -8,9 +8,9 @@ const app = express();
 // ======================================
 // MIDDLEWARE
 // ======================================
-app.use(
-   {origin:process.env.FRONTEND_URL}
-);
+app.use(cors({
+  origin:process.env.FRONTEND_URL
+}));
 app.use(express.json());
 
 
